@@ -1,47 +1,112 @@
-# Client Scorecard Assessment
+# APG Client Scorecard Assessment
 
-An interactive, smart-board-friendly client assessment built with React,
-TypeScript, and Vite.
+A smart-board-friendly assessment for conducting client meetings, calculating
+scores live, saving meeting history, and presenting professional results.
 
-## Why this stack?
+Branding is configured in `src/brandConfig.ts` for APG (Asset Preservation
+Group).
 
-- **React** updates scores and progress immediately as answers change.
-- **TypeScript** makes assessment records and calculation inputs explicit.
-- **Vite** keeps local development fast and the project configuration small.
+## Technology
 
-The first version will store completed meetings in browser local storage. The
-storage logic will be kept separate so it can later be replaced by a database.
+- **React** updates the interface immediately when an answer changes.
+- **TypeScript** documents the shape of questions, answers, and meeting records.
+- **Vite** provides a small, fast development and production setup.
+- **Browser local storage** saves the first-version meeting history without a
+  backend or additional dependency.
 
-## Run the project
+Use Node.js 22 LTS. The `.nvmrc` file records the recommended version.
 
-Use Node.js 22 LTS (the `.nvmrc` file records the recommended version). The
-project can build on the currently installed Node 21 runtime, but npm correctly
-warns that odd-numbered Node releases are not supported long-term.
+## Run locally
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Open the local address shown in the terminal.
-
-## Verify the project
+## Verify changes
 
 ```powershell
 npm run lint
 npm run build
 ```
 
-## Important files
+## Where to make common changes
 
-- `src/main.tsx` starts the React application.
-- `src/App.tsx` is the current top-level screen.
-- `src/App.css` contains styles for the current screen.
-- `src/index.css` contains reusable brand colors and global styles.
-- `package.json` lists project commands and dependencies.
+### Categories, questions, answer labels, and thresholds
 
-## Development stages
+Edit `src/assessmentConfig.ts`. This is the single source of truth for:
 
-This project follows the requested staged approach. Step 1 establishes the
-project and visual foundation. Step 2 will add the configurable categories and
-questions before any scoring interface is implemented.
+- Category names and descriptions
+- The five questions in each category
+- The 1–5 answer labels
+- Red, yellow, and green percentage thresholds
+
+The current questions are explicitly marked as sample data.
+
+### Scoring and business rules
+
+Edit `src/scorecard.ts`. It contains deterministic functions for:
+
+- Category percentages
+- Overall percentage
+- Completion percentage
+- Progress status colors
+- Top opportunities and low-scoring questions
+- Meeting-to-meeting changes
+- Wins Unlocked
+
+Each category percentage uses:
+
+`points earned / maximum category points × 100`
+
+With five questions worth five points each, the maximum is 25 points.
+
+### Meeting history
+
+`src/meetingStorage.ts` reads and writes completed meeting records in the
+current browser's local storage. `src/App.tsx` creates each complete meeting
+record and passes it to the storage functions.
+
+The storage functions are intentionally separate. A future database service can
+replace this file without rewriting the scoring or visual components.
+
+### Interface components
+
+- `src/App.tsx` manages the active assessment, calculated results, and workflow.
+- `src/components/AssessmentView.tsx` displays categories and scoring buttons.
+- `src/components/AssessmentResults.tsx` displays the client-ready summary.
+- `src/components/MeetingHistoryView.tsx` displays saved meetings.
+- `src/components/ScoreBar.tsx` displays reusable score progress bars.
+- `src/App.css` contains component and print styles.
+- `src/index.css` contains brand colors and global accessibility styles.
+
+## Win rules
+
+The first version unlocks a win when:
+
+- A category improves by at least 10 percentage points.
+- A category enters the green range.
+- A category leaves the red range.
+- A category reaches 80% or higher.
+- The overall score improves by at least 10 percentage points.
+- The client reaches their highest overall score so far.
+
+All win rules are located in `identifyUnlockedWins()` in `src/scorecard.ts`.
+
+## Printing and PDF
+
+The results screen has separate Print Results and Download Assessment PDF
+buttons. Printing uses the browser and the dedicated print stylesheet. PDF
+download uses `src/pdfReport.ts` and `jsPDF` to generate a branded, text-based
+report directly. The PDF includes the overall score, category progress,
+opportunities, wins, and meeting comparison.
+
+## Future database and hosting
+
+For multi-device access, replace the functions in `src/meetingStorage.ts` with
+API calls to a database-backed service. The `SavedMeeting` type in
+`src/scorecard.ts` documents the record that needs to be stored.
+
+Before public hosting, add the final company branding, replace the sample
+questions, choose an authentication approach if records are private, and move
+meeting history out of browser local storage.
