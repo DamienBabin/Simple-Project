@@ -30,6 +30,7 @@ export function MeetingHistoryView({ savedMeetings, formatMeetingDate, onNewAsse
               <div>
                 <span>{formatMeetingDate(meeting.meetingDate)}</span>
                 <h3>{meeting.clientName}</h3>
+                <p><strong>Customer ID:</strong> {meeting.clientId || 'Legacy record'}</p>
                 <p>{meeting.opportunities.join(' • ')}</p>
               </div>
               <div className="history-actions">

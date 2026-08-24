@@ -1,5 +1,6 @@
 export const BRAND = {
   shortName: 'APG',
   companyName: 'Asset Preservation Group',
-  productName: 'Client Scorecard Assessment',
+  productName: 'S.I.M.P.L.E.™ Scorecard',
+  logoPath: '/apg-logo.png',
 } as const

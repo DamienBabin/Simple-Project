@@ -5,6 +5,7 @@ export type CategoryScores = Record<string, number>
 
 export type SavedMeeting = {
   id: string
+  clientId?: string
   clientName: string
   meetingDate: string
   savedAt: string

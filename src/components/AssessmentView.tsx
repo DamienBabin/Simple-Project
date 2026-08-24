@@ -8,6 +8,7 @@ type AssessmentViewProps = {
   completionPercentage: number
   isAssessmentComplete: boolean
   onScoreSelected: (questionId: string, score: number) => void
+  onPrintBlankAssessment: () => void
   onReviewResults: () => void
 }
 
@@ -17,6 +18,7 @@ export function AssessmentView({
   completionPercentage,
   isAssessmentComplete,
   onScoreSelected,
+  onPrintBlankAssessment,
   onReviewResults,
 }: AssessmentViewProps) {
   return (
@@ -27,11 +29,11 @@ export function AssessmentView({
       </div>
 
       <div className="category-list">
-        {ASSESSMENT_CATEGORIES.map((category, categoryIndex) => (
+        {ASSESSMENT_CATEGORIES.map((category) => (
           <article className="category-card" key={category.id}>
             <div className="category-header">
               <div>
-                <span className="category-number">{String(categoryIndex + 1).padStart(2, '0')}</span>
+                <span className="category-number">{category.code} · S.I.M.P.L.E.™</span>
                 <h3>{category.name}</h3>
                 <p>{category.description}</p>
               </div>
@@ -72,7 +74,10 @@ export function AssessmentView({
           <strong>{completionPercentage}% complete</strong>
           <small>{isAssessmentComplete ? 'Ready to review and save' : 'Continue answering the questions'}</small>
         </span>
-        <button className="primary-button" onClick={onReviewResults}>Review results</button>
+        <div className="sticky-action-buttons">
+          <button className="secondary-button" onClick={onPrintBlankAssessment}>Print paper assessment</button>
+          <button className="primary-button" onClick={onReviewResults}>Review results</button>
+        </div>
       </div>
     </section>
   )

@@ -10,6 +10,7 @@ type PdfOpportunity = {
 }
 
 export type PdfReportData = {
+  clientId: string
   clientName: string
   formattedMeetingDate: string
   meetingDate: string
@@ -44,11 +45,27 @@ function scoreColor(score: number): ReportColor {
 
 function safePdfFilename(clientName: string, meetingDate: string) {
   const safeClientName = clientName.trim().replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'Client'
-  return `${safeClientName}-Scorecard-${meetingDate}.pdf`
+  return `${safeClientName}-APG-SIMPLE-Scorecard-${meetingDate}.pdf`
 }
 
-export function downloadAssessmentPdf(reportData: PdfReportData) {
+async function loadBrandLogoDataUrl() {
+  try {
+    const logoResponse = await fetch(BRAND.logoPath)
+    const logoBlob = await logoResponse.blob()
+    return await new Promise<string>((resolve, reject) => {
+      const fileReader = new FileReader()
+      fileReader.onload = () => resolve(String(fileReader.result))
+      fileReader.onerror = () => reject(fileReader.error)
+      fileReader.readAsDataURL(logoBlob)
+    })
+  } catch {
+    return undefined
+  }
+}
+
+export async function downloadAssessmentPdf(reportData: PdfReportData) {
   const pdfDocument = new jsPDF({ unit: 'mm', format: 'letter' })
+  const brandLogoDataUrl = await loadBrandLogoDataUrl()
   const pageWidth = pdfDocument.internal.pageSize.getWidth()
   const pageHeight = pdfDocument.internal.pageSize.getHeight()
   const leftMargin = 16
@@ -83,14 +100,18 @@ export function downloadAssessmentPdf(reportData: PdfReportData) {
 
   pdfDocument.setFillColor(...REPORT_COLORS.navy)
   pdfDocument.rect(0, 0, pageWidth, 48, 'F')
+  if (brandLogoDataUrl) {
+    pdfDocument.addImage(brandLogoDataUrl, 'PNG', leftMargin, 9, 25, 25)
+  }
   pdfDocument.setTextColor(255, 255, 255)
   pdfDocument.setFont('helvetica', 'bold')
   pdfDocument.setFontSize(20)
-  pdfDocument.text(`${BRAND.shortName} ${BRAND.productName}`, leftMargin, 18)
+  pdfDocument.text(`${BRAND.shortName} ${BRAND.productName}`, leftMargin + 31, 18)
   pdfDocument.setFont('helvetica', 'normal')
   pdfDocument.setFontSize(10)
-  pdfDocument.text(reportData.clientName || 'Client name not entered', leftMargin, 28)
-  pdfDocument.text(reportData.formattedMeetingDate, leftMargin, 35)
+  pdfDocument.text(reportData.clientName || 'Client name not entered', leftMargin + 31, 28)
+  pdfDocument.text(`Customer ID: ${reportData.clientId || 'Not entered'}`, leftMargin + 31, 34)
+  pdfDocument.text(reportData.formattedMeetingDate, leftMargin + 31, 40)
   pdfDocument.setFont('helvetica', 'bold')
   pdfDocument.setFontSize(25)
   pdfDocument.text(`${reportData.overallScore}%`, pageWidth - leftMargin, 25, { align: 'right' })

@@ -1,4 +1,5 @@
 import { ASSESSMENT_CATEGORIES } from '../assessmentConfig'
+import { BRAND } from '../brandConfig'
 import {
   determineProgressStatus,
   type CategoryScores,
@@ -15,6 +16,7 @@ type Opportunity = {
 }
 
 type AssessmentResultsProps = {
+  clientId: string
   clientName: string
   meetingDate: string
   overallScore: number
@@ -45,6 +47,7 @@ function formatChange(change: number) {
 }
 
 export function AssessmentResults({
+  clientId,
   clientName,
   meetingDate,
   overallScore,
@@ -63,14 +66,16 @@ export function AssessmentResults({
   onSaveMeeting,
   onNewAssessment,
 }: AssessmentResultsProps) {
-  const canDownloadFinalReport = isAssessmentComplete && clientName.trim().length > 0
+  const canDownloadFinalReport = isAssessmentComplete && clientId.trim().length > 0 && clientName.trim().length > 0
 
   return (
     <section className="content-section results-view">
       <div className="results-title">
-        <div>
+        <img className="results-logo" src={BRAND.logoPath} alt={`${BRAND.companyName} logo`} />
+        <div className="results-client-details">
           <p className="eyebrow">Client assessment summary</p>
           <h2>{clientName || 'Client name not entered'}</h2>
+          <p>Customer ID: {clientId || 'Not entered'}</p>
           <p>{formatMeetingDate(meetingDate)}</p>
         </div>
         <div className={`score-seal ${determineProgressStatus(overallScore)}`}>
@@ -151,17 +156,17 @@ export function AssessmentResults({
 
       <div className="action-bar no-print">
         <button className="secondary-button" onClick={onEditAssessment}>Edit assessment</button>
+        <button className="text-button" onClick={onNewAssessment}>Start new assessment</button>
         <button className="secondary-button" onClick={onPrint}>Print Results</button>
         <button
           className="secondary-button"
           onClick={onDownloadPdf}
           disabled={!canDownloadFinalReport}
-          title={canDownloadFinalReport ? 'Download the completed client report' : 'Enter a client name and complete every question first'}
+          title={canDownloadFinalReport ? 'Download the completed client report' : 'Enter a Customer ID and client name, then complete every question first'}
         >
           Download Assessment PDF
         </button>
         <button className="primary-button" onClick={onSaveMeeting}>Save meeting</button>
-        <button className="text-button" onClick={onNewAssessment}>Start new assessment</button>
       </div>
     </section>
   )
